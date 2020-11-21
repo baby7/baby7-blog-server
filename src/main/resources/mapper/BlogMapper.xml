@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.baby7blog.modules.blog.mapper.BlogMapper">
+
+    <!-- 分页查询（去除内容） -->
+    <select id="getMainBlogPage" resultType="com.baby7blog.modules.blog.entity.Blog">
+        SELECT
+        blog.id,
+        blog.menu_id,
+        blog.look_num,
+        blog.title,
+        blog.img,
+        blog.`type`,
+        blog.introduce,
+        blog.create_time,
+        blog.update_time
+        FROM blog
+        <if test="blogDTO.labelId != null">
+            LEFT JOIN blog_label ON blog.id = blog_label.blog_id
+        </if>
+        <where>
+            <if test="blogDTO.menuId != null">
+                AND menu_id = #{blogDTO.menuId}
+            </if>
+            <if test="blogDTO.labelId != null">
+                AND blog_label.label_id = #{blogDTO.labelId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="getPrevBlog" resultType="com.baby7blog.modules.blog.entity.Blog">
+        select blog.id,
+               blog.title
+        from blog
+        where id = (select id from blog where id <![CDATA[<]]> #{id} order by id desc limit 1)
+    </select>
+
+    <select id="getNextBlog" resultType="com.baby7blog.modules.blog.entity.Blog">
+        select blog.id,
+               blog.title
+        from blog
+        where id = (select id from blog where id <![CDATA[>]]> #{id} order by id asc limit 1)
+    </select>
+
+    <update id="lookBlog">
+        update blog
+        set look_num=look_num + 1
+        where id = #{id}
+    </update>
+
+</mapper>
