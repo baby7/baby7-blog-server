@@ -1,20 +1,22 @@
 package com.baby7blog.modules.blog.service.impl;
 
-import com.baby7blog.config.WebConfig;
+import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baby7blog.modules.blog.entity.Comment;
 import com.baby7blog.modules.blog.mapper.CommentMapper;
 import com.baby7blog.modules.blog.service.CommentService;
-import com.baby7blog.modules.file.local.FileUploadUtils;
+import com.baby7blog.modules.blog.service.SettingService;
 import com.baby7blog.modules.file.service.FileService;
 import com.baby7blog.util.AvatarHelper;
-import com.baby7blog.util.Base64Converter;
+import com.baby7blog.util.email.Email;
+import com.baby7blog.util.email.EmailUtil;
+import com.baby7blog.util.file.Base64Converter;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -24,7 +26,13 @@ import java.util.List;
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     @Autowired
-    FileService fileService;
+    private FileService fileService;
+
+    @Autowired
+    private SettingService settingService;
+
+    @Autowired
+    private EmailUtil emailUtil;
 
     /**
      * 进行评论
@@ -49,8 +57,30 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         else {
             comment.setAvatar(checkList.get(0).getAvatar());
         }
+//        sendEmail(comment);
         return baseMapper.insert(comment) > 0;
     }
 
-
+    private void sendEmail(Comment comment){
+        Email email = new Email();
+        email.setAvatar(comment.getAvatar());
+        email.setNickname(comment.getNickname());
+        email.setUrl(comment.getUrl());
+        email.setDate(DateUtil.formatLocalDateTime(comment.getCreateTime()));
+        email.setContent(comment.getContent().substring(0,25) + "...");
+        email.setTo(comment.getEmail());
+        //取得系统设置
+        JSONObject setting = settingService.getSetting();
+        JSONObject emailSetting = setting.getJSONObject("email");
+        email.setHost(emailSetting.getString("host"));
+        email.setUsername(emailSetting.getString("username"));
+        email.setPassword(emailSetting.getString("password"));
+        if(comment.getBlogId().equals(0)){
+            email.setPage(emailSetting.getString("url") + "comment");
+        }
+        else {
+            email.setPage(emailSetting.getString("url") + "/myBlog?id=" + comment.getBlogId());
+        }
+        emailUtil.send(email);
+    }
 }

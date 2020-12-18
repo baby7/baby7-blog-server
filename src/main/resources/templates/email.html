@@ -1,0 +1,122 @@
+<html>
+
+<head>
+    <style>
+        body {
+            background: url(https://media.baby7blog.com/blog/email/bg.png);
+            font-family: 'Arimo', sans-serif;
+        }
+
+        .login-form {
+            background: url(https://media.baby7blog.com/blog/email/bg-2.png) no-repeat;
+            background-size: 100% 100%;
+            margin: 10em auto 0;
+            width: 830px;
+            height: 500px;
+        }
+
+        .form {
+            margin: 130px auto;
+            width: 59%;
+        }
+
+        .login-form h1 {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #d36f39;
+            padding: 6.4em 0em 2em;
+            text-align: center;
+            font-family: 'Arimo', sans-serif;
+            line-height: 1.4em;
+            width: 61%;
+            margin: 0 auto;
+        }
+
+        .style-1.button.red {
+            border: 1px solid #B57755;
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #DF8C5F), color-stop(100%, #B86639));
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f65644', endColorstr='#ca3e3e', GradientType=0);
+            color: #fff;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+            outline: none;
+            width: 100%;
+            border-radius: 4px;
+            letter-spacing: 5px;
+        }
+
+        .style-1.large.button {
+            font-size: 18px;
+            padding: 0 42px 3px;
+            height: 42px;
+            line-height: 39px;
+            cursor: pointer;
+        }
+    </style>
+    <style>
+        .comment-img {
+            width: 3.125em;
+            height: 3.125em;
+            float: left;
+            border-radius: 50%;
+            margin-right: .7525em;
+            border: 1px solid #f5f5f5;
+            padding: .125em;
+        }
+
+        .comment-head {
+            line-height: 1.5;
+            margin-top: 0;
+        }
+
+        .comment-meta {
+            line-height: 1;
+            position: relative;
+        }
+
+        .comment-nick {
+            text-decoration: none;
+        }
+
+        .comment-content {
+            word-break: break-all;
+            text-align: justify;
+            color: #888;
+            font-size: .875em;
+            line-height: 2;
+            position: relative;
+            margin-bottom: .75em;
+            padding-top: .625em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-form">
+        <div class="form">
+            <div class="logo">
+                <h1>您在博客的评论有朋友回复啦</h1>
+            </div>
+            <div>
+                <img th:src="${email.avatar}" class="comment-img">
+                <div>
+                    <div class="comment-head"><a th:href="${email.url}" class="comment-nick" th:text="${email.nickname}">
+                            昵称
+                        </a></div>
+                    <div class="comment-meta"><span th:text="${email.date}">时间</span></div>
+                    <div class="comment-content">
+                        <div>
+                            <div>
+                                <p th:text="${email.content}">内容</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a th:href="${email.page}">
+                <button class="large red button style-1">查看详情</button>
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

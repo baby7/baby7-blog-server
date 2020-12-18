@@ -1,4 +1,4 @@
-package com.baby7blog.util;
+package com.baby7blog.util.file;
 
 import org.springframework.web.multipart.MultipartFile;
 
