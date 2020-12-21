@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 评论
@@ -30,6 +31,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Autowired
     private SettingService settingService;
+
+    @Autowired
+    private CommentService commentService;
 
     @Autowired
     private EmailUtil emailUtil;
@@ -62,15 +66,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     private void sendEmail(Comment comment){
+        //取得系统设置
+        JSONObject setting = settingService.getSetting();
+        //构建邮件基本信息
         Email email = new Email();
         email.setAvatar(comment.getAvatar());
         email.setNickname(comment.getNickname());
         email.setUrl(comment.getUrl());
         email.setDate(DateUtil.formatLocalDateTime(comment.getCreateTime()));
         email.setContent(comment.getContent().substring(0,25) + "...");
-        email.setTo(comment.getEmail());
-        //取得系统设置
-        JSONObject setting = settingService.getSetting();
         JSONObject emailSetting = setting.getJSONObject("email");
         email.setHost(emailSetting.getString("host"));
         email.setUsername(emailSetting.getString("username"));
@@ -81,6 +85,18 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         else {
             email.setPage(emailSetting.getString("url") + "/myBlog?id=" + comment.getBlogId());
         }
-        emailUtil.send(email);
+        //发送给博主的邮件
+        {
+            email.setTitle("您的博客有读者回复啦");
+            email.setTo(emailSetting.getString("username"));
+            emailUtil.send(email);
+        }
+        //发送给被回复方的邮件
+        if(null != comment.getReplyId() && !Objects.equals(comment.getReplyId(), 0)){
+            email.setTitle("您在博客的评论有朋友回复啦");
+            Comment reply = commentService.getById(comment.getReplyId());
+            email.setTo(reply.getEmail());
+            emailUtil.send(email);
+        }
     }
 }

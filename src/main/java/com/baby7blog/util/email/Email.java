@@ -27,4 +27,6 @@ public class Email {
 
     //网站具体地址
     private String page;
+    //邮件标题
+    private String title;
 }

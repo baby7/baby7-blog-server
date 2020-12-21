@@ -94,7 +94,7 @@
     <div class="login-form">
         <div class="form">
             <div class="logo">
-                <h1>您在博客的评论有朋友回复啦</h1>
+                <h1 th:text="${email.title}">标题</h1>
             </div>
             <div>
                 <img th:src="${email.avatar}" class="comment-img">
