@@ -71,7 +71,7 @@ public class SettingController {
     /**
      * 博客统计
      */
-    @GetMapping("/change/getMetric")
+    @GetMapping("/info/getMetric")
     public R getMetric() {
         Map<String, Integer> metric = new HashMap<>();
         metric.put("blogCount", blogService.count());
