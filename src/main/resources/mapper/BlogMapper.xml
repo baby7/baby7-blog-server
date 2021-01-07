@@ -11,7 +11,6 @@
         blog.look_num,
         blog.title,
         blog.img,
-        blog.`type`,
         blog.introduce,
         blog.create_time,
         blog.update_time

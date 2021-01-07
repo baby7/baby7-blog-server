@@ -39,10 +39,6 @@ public class BlogDTO implements Serializable {
      */
     private String img;
     /**
-     * 类型(0=富文本编辑器，1=markdown)
-     */
-    private Integer type;
-    /**
      * 内容
      */
     private String content;
