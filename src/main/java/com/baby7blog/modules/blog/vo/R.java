@@ -59,4 +59,8 @@ public class R<T> implements Serializable {
         apiResult.setMsg(msg);
         return apiResult;
     }
+
+    public static <T> R<T> returnRest(Boolean result){
+        return result ? ok() : failed();
+    }
 }

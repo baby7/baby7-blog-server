@@ -13,6 +13,7 @@ import com.baby7blog.util.security.SecurityUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -44,7 +45,7 @@ public class UserController {
         User userInfo = userService.getOne(queryWrapper);
         //用户不存在
         if(Objects.isNull(userInfo)) {
-            return R.failed(ResultTypeConstants.ACCOUNT_PASSWORD_ERROR);
+            return R.failed(ResultTypeConstants.ACCOUNT_USER_NOT);
         }
         // 验证密码
         BCryptPasswordEncoder bcryptPasswordEncoder = new BCryptPasswordEncoder();
@@ -77,7 +78,7 @@ public class UserController {
      */
     @GetMapping("/change/info")
     @Cacheable(value = CommonConstants.REDIS_GROUP_USER, key = "'info'")
-    public R info() {
+    public R getInfo() {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUsername, "admin");
         User res = userService.getOne(queryWrapper);
@@ -86,5 +87,56 @@ public class UserController {
             return R.ok(info, "success");
         }
         return R.ok();
+    }
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/change/password")
+    @Caching(evict = {@CacheEvict(value = CommonConstants.REDIS_GROUP_USER, allEntries = true)})
+    public R setPassword(@RequestParam("oldPassword") String oldPassword,
+                      @RequestParam("password") String password,
+                      @RequestParam("username") String username) {
+        if(StringUtils.isBlank(oldPassword) || StringUtils.isBlank(password) || StringUtils.isBlank(username)){
+            return R.failed(ResultTypeConstants.ACCOUNT_INFO_NTO);
+        }
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUsername, username);
+        User userInfo = userService.getOne(queryWrapper);
+        //用户不存在
+        if(Objects.isNull(userInfo)) {
+            return R.failed(ResultTypeConstants.ACCOUNT_USER_NOT);
+        }
+        // 验证密码
+        BCryptPasswordEncoder bcryptPasswordEncoder = new BCryptPasswordEncoder();
+        if (!bcryptPasswordEncoder.matches(oldPassword + CommonConstants.SALT, userInfo.getPassword())) {
+            return R.failed(ResultTypeConstants.ACCOUNT_PASSWORD_ERROR);
+        }
+        redisUtil.del(CommonConstants.PREFIX_USER_TOKEN + SecurityUtils.getUser().getToken());
+        userInfo.setPassword(bcryptPasswordEncoder.encode(password + CommonConstants.SALT));
+        return R.returnRest(userService.updateById(userInfo));
+    }
+
+    /**
+     * 修改用户信息
+     */
+    @PostMapping("/change/info")
+    @Caching(evict = {@CacheEvict(value = CommonConstants.REDIS_GROUP_USER, allEntries = true)})
+    public R setInfo(@RequestParam("name") String name,
+                  @RequestParam("avatar") String avatar,
+                  @RequestParam("username") String username) {
+        if(StringUtils.isBlank(name) || StringUtils.isBlank(avatar) || StringUtils.isBlank(username)){
+            return R.failed(ResultTypeConstants.ACCOUNT_INFO_NTO);
+        }
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUsername, username);
+        User userInfo = userService.getOne(queryWrapper);
+        //用户不存在
+        if(Objects.isNull(userInfo)) {
+            return R.failed(ResultTypeConstants.ACCOUNT_PASSWORD_ERROR);
+        }
+        userInfo.setName(name);
+        userInfo.setAvatar(avatar);
+        return R.returnRest(userService.updateById(userInfo));
     }
 }
