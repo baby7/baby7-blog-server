@@ -1,10 +1,10 @@
 package com.baby7blog.modules.blog.controller;
 
 import com.baby7blog.modules.blog.common.CommonConstants;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baby7blog.modules.blog.entity.Menu;
 import com.baby7blog.modules.blog.service.MenuService;
 import com.baby7blog.modules.blog.vo.R;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -30,7 +30,9 @@ public class MenuController {
     @GetMapping(value = "/info/page")
     @Cacheable(value = CommonConstants.REDIS_GROUP_MENU, key = "'page/'+#page.current+'/'+#page.size")
     public R getMenuPage(Page page, Menu menu) {
-        return R.ok(menuService.page(page, Wrappers.query(menu)));
+        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByAsc(Menu::getSort);
+        return R.ok(menuService.page(page, queryWrapper));
     }
 
     /**
@@ -39,7 +41,9 @@ public class MenuController {
     @GetMapping("/info/list")
     @Cacheable(value = CommonConstants.REDIS_GROUP_MENU, key = "'list/'")
     public R list() {
-        return R.ok(menuService.list());
+        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByAsc(Menu::getSort);
+        return R.ok(menuService.list(queryWrapper));
     }
 
     /**
